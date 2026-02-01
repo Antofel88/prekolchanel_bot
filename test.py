@@ -8,50 +8,32 @@ import logging
 from dotenv import load_dotenv
 
 
-logging.basicConfig(level=logging.INFO)
+import requests
+from deep_translator import GoogleTranslator
 
+
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
-y = yadisk.YaDisk(token=os.getenv("YA_TOKEN"))
 
-ya_disk_folder_video = "prekolchanel_video"  # папка яндекс диска с видосами
+url = "https://uselessfacts.jsph.pl/random.json?language=en"
+response = requests.get(url)
+data = response.json()
+fact = data["text"]
 
+fact_translated = GoogleTranslator(source="auto", target="ru").translate(fact)
 
-# формируем список файлов папки яндекс диска
-def creation_yandex_list(folder):
-    yandex_list = [i["name"] for i in y.listdir(folder)]
-    return yandex_list
-
-
-# выбор случайного видео, скачивание, постинг и удаление
-def send_precol_video(folder):
-    precol_list = creation_yandex_list(folder)
-    if precol_list:
-        # выбираем случайное видео
-        precol = random.choice(precol_list)
-        # скачиваем видео
-        y.download(
-            f"{folder}/{precol}",
-            f"videos/{precol}",
-        )
-        # указываем путь для скачанного видео
-        video_path = os.path.join(
-            "videos",
-            precol,
-        )
-        # открываем видео и отправляем в чат
-        with open(video_path, "rb") as video:
-            bot.send_video(chat_id=os.getenv("chat_id_public_test"), video=video)
-
-        # удаляем с Яндекс.Диска и локально
-        y.remove(f"{folder}/{precol}")
-        os.remove(f"videos/{precol}")
-
-    else:
-        bot.send_message(
-            chat_id=os.getenv("chat_id_admin"), text="СЭР, Видео-приколы закончились!"
-        )
+caption = f"Интересный факт:\n\n{fact_translated}"
 
 
-send_precol_video(ya_disk_folder_video)
+photo_path = os.path.join(
+    "images",
+    "photo_2025-12-29_11-54-26.jpg",
+)
+
+# открываем картинку и отправляем в чат
+with open(photo_path, "rb") as photo:
+    bot.send_photo(
+        chat_id=os.getenv("chat_id_public_test"), photo=photo, caption=caption
+    )
