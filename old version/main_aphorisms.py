@@ -26,6 +26,49 @@ def creation_yandex_list(folder):
     return yandex_list
 
 
+# Получает список афоризмов из БД
+def get_list_aphorisms():
+    with sqlite3.connect("aphorisms.db") as conn:
+        cursor = conn.cursor()
+
+        # Получаем все афоризмы в виде списка
+        cursor.execute("SELECT id, text FROM aphorisms")
+        aphorisms = cursor.fetchall()
+
+        return aphorisms
+
+
+# Удаляет афоризм из БД
+def remove_aphorism(aph_id):
+    with sqlite3.connect("aphorisms.db") as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM aphorisms WHERE id = ?", (aph_id,))
+
+
+# Получает случайный афоризм и удаляет его
+def get_random_aphorism():
+
+    aphorisms = get_list_aphorisms()
+
+    if not aphorisms:
+        bot.send_message(
+            chat_id=os.getenv("chat_id_admin"), text="Бомбовые цитаты закончились!"
+        )
+        return ""
+
+    # Выбираем случайный афоризм из списка, т.к. элемент списка это кортеж с двумя значениями, то присваиваем переменным id и сам текст
+    aph_id, aph_text = random.choice(aphorisms)
+
+    # Удаляем его с помошью отдельной функции
+    remove_aphorism(
+        aph_id,
+    )
+
+    # Возвращаем текст афоризма
+    return aph_text
+
+
 # выбор случайной картинки и афоризма, скачивание, постинг и удаление
 def send_prekol_image(folder):
 
@@ -44,11 +87,14 @@ def send_prekol_image(folder):
             "images",
             prekol_name,
         )
+        # Получаем афоризм из фунции
+        caption = get_random_aphorism()
 
         # открываем картинку, добавляем афоризм и отправляем в чат
         with open(photo_path, "rb") as photo:
-            bot.send_photo(chat_id=os.getenv("chat_id_public"), photo=photo)
-
+            bot.send_photo(
+                chat_id=os.getenv("chat_id_public"), caption=caption, photo=photo
+            )
         # удаляем с Яндекс.Диска и локально
         y.remove(f"{folder}/{prekol_name}")
         os.remove(f"images/{prekol_name}")
@@ -75,10 +121,14 @@ def send_prekol_video(folder):
             "videos",
             prekol_name,
         )
+        # Получаем афоризм из фунции
+        caption = get_random_aphorism()
 
         # открываем видео и отправляем в чат
         with open(video_path, "rb") as video:
-            bot.send_video(chat_id=os.getenv("chat_id_public"), video=video)
+            bot.send_video(
+                chat_id=os.getenv("chat_id_public"), caption=caption, video=video
+            )
 
         # удаляем с Яндекс.Диска и локально
         y.remove(f"{folder}/{prekol_name}")
@@ -93,10 +143,11 @@ def send_prekol_amount():
 
     number_of_images = len(creation_yandex_list(ya_disk_folder_images))
     number_of_videos = len(creation_yandex_list(ya_disk_folder_videos))
+    number_of_aphorisms = len(get_list_aphorisms())
 
     bot.send_message(
         chat_id=os.getenv("chat_id_admin"),
-        text=f"Остатки картинок: {number_of_images}\nОстатки видосов: {number_of_videos}",
+        text=f"Остатки картинок: {number_of_images}\nОстатки афоризмов: {number_of_aphorisms}\nОстатки видосов: {number_of_videos}",
     )
 
 
