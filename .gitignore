@@ -1,8 +1,8 @@
 .env
 
-/images
-/videos
-/db
+images/
+videos/
+db/
 .mypy_cache/
 .vscode/
 .venv/
