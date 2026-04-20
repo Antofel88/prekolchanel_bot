@@ -1,12 +1,13 @@
 import telebot
-import sqlite3
 import schedule
 import time
 import os
 import random
 import yadisk
 import logging
+import pytz
 from dotenv import load_dotenv
+from datetime import datetime
 
 
 logging.basicConfig(level=logging.INFO)
@@ -18,6 +19,9 @@ y = yadisk.YaDisk(token=os.getenv("YA_TOKEN"))
 
 ya_disk_folder_images = "prekolchanel_images"  # папка яндекс диска с картинками
 ya_disk_folder_videos = "prekolchanel_videos"  # папка яндекс диска с видосами
+
+# Устанавливаем часовой пояс Екатеринбурга
+tz_ekaterinburg = pytz.timezone("'Asia/Yekaterinburg'")
 
 
 # Формируем список файлов папки яндекс диска
@@ -100,13 +104,25 @@ def send_prekol_amount():
     )
 
 
-schedule.every().day.at("06:00").do(send_prekol_image, ya_disk_folder_images)
-schedule.every().day.at("07:00").do(send_prekol_video, ya_disk_folder_videos)
-schedule.every().day.at("11:00").do(send_prekol_image, ya_disk_folder_images)
-schedule.every().day.at("13:00").do(send_prekol_image, ya_disk_folder_images)
-schedule.every().day.at("17:00").do(send_prekol_image, ya_disk_folder_images)
-schedule.every().day.at("19:00").do(send_prekol_video, ya_disk_folder_videos)
-schedule.every().day.at("21:02").do(send_prekol_amount)
+schedule.every().day.at("08:00", tz_ekaterinburg).do(
+    send_prekol_image, ya_disk_folder_images
+)
+schedule.every().day.at("09:00", tz_ekaterinburg).do(
+    send_prekol_video, ya_disk_folder_videos
+)
+schedule.every().day.at("12:00", tz_ekaterinburg).do(
+    send_prekol_image, ya_disk_folder_images
+)
+schedule.every().day.at("13:00", tz_ekaterinburg).do(
+    send_prekol_image, ya_disk_folder_images
+)
+schedule.every().day.at("19:00", tz_ekaterinburg).do(
+    send_prekol_image, ya_disk_folder_images
+)
+schedule.every().day.at("21:00", tz_ekaterinburg).do(
+    send_prekol_video, ya_disk_folder_videos
+)
+schedule.every().day.at("21:02", tz_ekaterinburg).do(send_prekol_amount)
 
 while True:
     schedule.run_pending()
