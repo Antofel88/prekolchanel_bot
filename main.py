@@ -9,7 +9,6 @@ import pytz
 from dotenv import load_dotenv
 from datetime import datetime
 
-
 logging.basicConfig(level=logging.INFO)
 
 
@@ -116,10 +115,19 @@ schedule.every().day.at("12:00", tz_ekaterinburg).do(
 schedule.every().day.at("13:00", tz_ekaterinburg).do(
     send_prekol_image, ya_disk_folder_images
 )
+schedule.every().day.at("15:00", tz_ekaterinburg).do(
+    send_prekol_image, ya_disk_folder_images
+)
+schedule.every().day.at("17:00", tz_ekaterinburg).do(
+    send_prekol_image, ya_disk_folder_images
+)
 schedule.every().day.at("19:00", tz_ekaterinburg).do(
     send_prekol_image, ya_disk_folder_images
 )
 schedule.every().day.at("21:00", tz_ekaterinburg).do(
+    send_prekol_video, ya_disk_folder_videos
+)
+schedule.every().day.at("23:00", tz_ekaterinburg).do(
     send_prekol_video, ya_disk_folder_videos
 )
 schedule.every().day.at("21:02", tz_ekaterinburg).do(send_prekol_amount)
